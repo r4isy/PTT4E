@@ -28,14 +28,13 @@ PTT4E, herhangi bir mikrofon ve herhangi bir tuş kombinasyonu ile çalışan es
 ### Kurulum
 
 1. **Python'u yükleyin** (3.7 veya üzeri)
-2. **Gerekli paketleri yükleyin**:
-   ```bash
-   pip install pyaudio keyboard
-   ```
-3. **Uygulamayı çalıştırın**:
-   ```bash
-   python main.py
-   ```
+2. **Uygulamayı başlatın**:
+   - **Kolay yol**: `start.bat` dosyasına çift tıklayın
+   - **Manuel yol**: 
+     ```bash
+     pip install pyaudio keyboard
+     python main.py
+     ```
 
 ### Kullanım
 
@@ -85,14 +84,13 @@ PTT4E is a flexible push-to-talk application that works with any microphone and 
 ### Installation
 
 1. **Install Python** (3.7 or higher)
-2. **Install required packages**:
-   ```bash
-   pip install pyaudio keyboard
-   ```
-3. **Run the application**:
-   ```bash
-   python main.py
-   ```
+2. **Run the application**:
+   - **Easy way**: Double-click on `start.bat` file
+   - **Manual way**: 
+     ```bash
+     pip install pyaudio keyboard
+     python main.py
+     ```
 
 ### Usage
 
