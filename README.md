@@ -130,6 +130,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Feel free to open issues or submit pull requests if you have suggestions for improvements!
 
+## 💗 Contributors
+
+<a href="https://github.com/sansrough">
+  <img src="https://github.com/sansrough.png" width="100" />
+</a>
+
 ## ⚠️ Disclaimer
 
 This application is for educational and personal use. Make sure to comply with your local laws and regulations regarding audio recording and transmission.
