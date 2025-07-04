@@ -52,6 +52,10 @@ PTT4E, herhangi bir mikrofon ve herhangi bir tuş kombinasyonu ile çalışan es
 
 > **Ayarları değiştirmek veya tamamen silmek için config.json dosyasını düzenleyebilirsiniz.**
 
+> 🎨 **Tray İkonlarını Kişiselleştirin**  
+> `tray-active.ico` ve `tray-deactive.ico` dosyalarını kendi simgelerinizle değiştirerek istediğiniz görünümü kullanabilirsiniz.  
+> Dosya adları aynı kalmalı ve `main.py` ile aynı klasörde olmalıdır.
+
 ### Gereksinimler
 
 - Windows 10/11
@@ -111,6 +115,10 @@ PTT4E is a flexible push-to-talk application that works with any microphone and 
 4. **Start using**: Hold your assigned key to talk
 
 > **To change or delete your settings, edit or remove config.json.**
+
+> 🎨 **Customize Your Tray Icons**  
+> Replace `tray-active.ico` and `tray-deactive.ico` with your own icons to personalize your tray experience.  
+> Make sure filenames stay the same and icons are in the same folder as `main.py`.
 
 ### Requirements
 
