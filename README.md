@@ -6,6 +6,9 @@
 
 A versatile push-to-talk application that works with any input device and any key combination. Perfect for gamers, streamers, and anyone who needs flexible voice activation.
 
+> 📝 Tip: All dependencies are listed in `requirements.txt`
+
+
 ---
 
 ## 🇹🇷 Türkçe
@@ -14,7 +17,6 @@ A versatile push-to-talk application that works with any input device and any ke
 
 PTT4E, herhangi bir mikrofon ve herhangi bir tuş kombinasyonu ile çalışan esnek bir push-to-talk uygulamasıdır. Oyun oynarken, yayın yaparken veya sesli iletişim kurarken sesinizi istediğiniz tuşla kontrol edebilirsiniz.
 
-> **Ayarları değiştirmek veya tamamen silmek için config.json dosyasını düzenleyebilirsiniz.**
 
 ### Özellikler
 
@@ -30,11 +32,16 @@ PTT4E, herhangi bir mikrofon ve herhangi bir tuş kombinasyonu ile çalışan es
 1. **Python'u yükleyin** (3.7 veya üzeri)
 2. **Uygulamayı başlatın**:
    - **Kolay yol**: `start.bat` dosyasına çift tıklayın
-   - **Manuel yol**: 
+   - **Manuel yol**:
      ```bash
-     pip install pyaudio keyboard
+     pip install -r requirements.txt
      python main.py
      ```
+
+> 💡 Eğer `main.py` dosyasını doğrudan çalıştırıyorsanız,  
+> `tray-active.ico` ve `tray-deactive.ico` dosyalarının aynı klasörde bulunduğundan emin olun.  
+> Bunlar, sistem tepsisinde mikrofon durumu simgeleri için gereklidir.
+
 
 ### Kullanım
 
@@ -70,7 +77,6 @@ PTT4E, herhangi bir mikrofon ve herhangi bir tuş kombinasyonu ile çalışan es
 
 PTT4E is a flexible push-to-talk application that works with any microphone and any key combination. Control your voice with any key you want while gaming, streaming, or communicating.
 
-> **To change or delete your settings, edit or remove config.json.**
 
 ### Features
 
@@ -88,9 +94,14 @@ PTT4E is a flexible push-to-talk application that works with any microphone and 
    - **Easy way**: Double-click on `start.bat` file
    - **Manual way**: 
      ```bash
-     pip install pyaudio keyboard
+     pip install -r requirements.txt
      python main.py
      ```
+
+> 💡 If you're running `main.py` directly (not the .exe),  
+> make sure `tray-active.ico` and `tray-deactive.ico` are in the same folder.  
+> These are required for tray icon support.
+
 
 ### Usage
 

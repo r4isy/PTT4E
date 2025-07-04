@@ -1,2 +1,4 @@
 pyaudio>=0.2.11
-keyboard>=0.13.5 
+keyboard>=0.13.5
+pystray
+Pillow 
