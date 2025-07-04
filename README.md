@@ -48,7 +48,7 @@ PTT4E, herhangi bir mikrofon ve herhangi bir tuş kombinasyonu ile çalışan es
 1. **Dil seçin**: İlk çalıştırmada Türkçe veya İngilizce seçin
 2. **Mikrofon seçin**: Mikrofonunuzun adını (veya bir kısmını) girin
 3. **Tuş atayın**: Push-to-talk için kullanmak istediğiniz tuşa basın (klavye veya mouse tuşu)
-4. **Kullanmaya başlayın**: Atadığınız tuşa basılı tutarak konuşun
+4. **Kullanmaya başlayın**: Atadığınız tuşa basılı tutarak konuşun. Kenu
 
 > **Ayarları değiştirmek veya tamamen silmek için config.json dosyasını düzenleyebilirsiniz.**
 
