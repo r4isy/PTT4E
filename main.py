@@ -9,6 +9,7 @@ from typing import Dict, Any, Optional
 import pystray
 from PIL import Image
 import sys
+import webbrowser
 
 class PushToTalk:
     def __init__(self):
@@ -20,7 +21,9 @@ class PushToTalk:
         self.tray_icon = None
         self.tray_thread = None
         self.tray_running = threading.Event()
-        self.tray_state = 'deactive' 
+        self.tray_state = 'deactive'
+        self.input_stream = None
+        self.output_stream = None
         
     def get_messages(self) -> Dict[str, Dict[str, str]]:
         return {
@@ -44,7 +47,20 @@ class PushToTalk:
                 'exit_instruction': 'Press Ctrl+C to exit.',
                 'stopped': 'Stopped.',
                 'mic_info': '🎙️ Mic -> ID: {} | Channels: {} | Rate: {}',
-                'cable_info': '🔈 Cable Out -> ID: {} | Channels: {} | Rate: {}'
+                'cable_info': '🔈 Cable Out -> ID: {} | Channels: {} | Rate: {}',
+                'audio_devices_changed': 'Audio devices changed, reinitializing...',
+                'reinitializing_streams': 'Reinitializing audio streams...',
+                'failed_reinitialize': 'Failed to reinitialize audio, stopping...',
+                'max_retries_reached': 'Maximum retry attempts reached. Stopping audio loop.',
+                'input_stream_recovered': 'Input stream recovered successfully.',
+                'failed_recover_output': 'Failed to recover output stream: {}',
+                'failed_recover_input': 'Failed to recover input stream: {}',
+                'unexpected_error': 'Unexpected error in audio loop: {}',
+                'failed_reinitialize_audio': 'Failed to reinitialize audio: {}',
+                'error_checking_devices': 'Error checking audio devices: {}',
+                'github_star_request': 'Would you like to contribute to our project by giving a star on GitHub? (y/n) [default: n]:',
+                'github_star_thanks': 'Thank you! Opening GitHub repository...',
+                'github_star_declined': 'No problem! Thank you for using PTT4E.'
             },
             'tr': {
                 'welcome': '🎤 Her Şey İçin Push To Talk',
@@ -66,7 +82,20 @@ class PushToTalk:
                 'exit_instruction': 'Çıkmak için Ctrl+C tuşlayın.',
                 'stopped': 'Durduruldu.',
                 'mic_info': '🎙️ Mikrofon -> ID: {} | Kanallar: {} | Hız: {}',
-                'cable_info': '🔈 Cable Çıkış -> ID: {} | Kanallar: {} | Hız: {}'
+                'cable_info': '🔈 Cable Çıkış -> ID: {} | Kanallar: {} | Hız: {}',
+                'audio_devices_changed': 'Ses cihazları değişti, yeniden başlatılıyor...',
+                'reinitializing_streams': 'Ses akışları yeniden başlatılıyor...',
+                'failed_reinitialize': 'Ses yeniden başlatılamadı, durduruluyor...',
+                'max_retries_reached': 'Maksimum yeniden deneme sayısına ulaşıldı. Ses döngüsü durduruluyor.',
+                'input_stream_recovered': 'Giriş akışı başarıyla kurtarıldı.',
+                'failed_recover_output': 'Çıkış akışı kurtarılamadı: {}',
+                'failed_recover_input': 'Giriş akışı kurtarılamadı: {}',
+                'unexpected_error': 'Ses döngüsünde beklenmeyen hata: {}',
+                'failed_reinitialize_audio': 'Ses yeniden başlatılamadı: {}',
+                'error_checking_devices': 'Ses cihazları kontrol edilirken hata: {}',
+                'github_star_request': 'GitHub repomuza yıldız vererek katkı sağlamak ister misiniz? (y/n) [varsayılan: n]:',
+                'github_star_thanks': 'Teşekkürler! GitHub repository\'si açılıyor...',
+                'github_star_declined': 'Sorun değil! PTT4E\'yi kullandığınız için teşekkürler.'
             }
         }
     
@@ -221,21 +250,83 @@ class PushToTalk:
             return os.path.join(sys._MEIPASS, relative_path)
         return os.path.join(os.path.abspath('.'), relative_path)
     
-    def ptt_loop(self, input_stream, output_stream, key_name, CHUNK):
-        try:
-            while self.tray_running.is_set():
-                try:
-                    data = input_stream.read(CHUNK, exception_on_overflow=False)
-                except KeyboardInterrupt:
-                    self.tray_running.clear()
-                    break
+    def ptt_loop(self, input_stream, output_stream, key_name, CHUNK, input_dev, output_dev):
+        max_retries = 3
+        retry_count = 0
+        device_check_counter = 0
+        
+        while self.tray_running.is_set():
+            try:
+                # Periodically check audio devices (every 1000 iterations)
+                device_check_counter += 1
+                if device_check_counter >= 1000:
+                    if not self.check_audio_devices(input_dev, output_dev):
+                        print(self.messages[self.language]['reinitializing_streams'])
+                        new_input, new_output = self.reinitialize_audio(input_dev, output_dev, CHUNK)
+                        if new_input and new_output:
+                            input_stream = new_input
+                            output_stream = new_output
+                            self.input_stream = new_input
+                            self.output_stream = new_output
+                            retry_count = 0  # Reset retry count on successful reinit
+                        else:
+                            print(self.messages[self.language]['failed_reinitialize'])
+                            break
+                    device_check_counter = 0
+                
+                data = input_stream.read(CHUNK, exception_on_overflow=False)
                 if self.get_key_state(key_name):
                     self.tray_state = 'active'
-                    output_stream.write(data)
+                    try:
+                        output_stream.write(data)
+                    except OSError as e:
+                        print(f"Output stream error: {e}")
+                        try:
+                            output_stream.stop_stream()
+                            output_stream.close()
+                            output_stream = self.p.open(format=pyaudio.paInt16,
+                                                       channels=output_dev['channels'],
+                                                       rate=output_dev['rate'],
+                                                       output=True,
+                                                       output_device_index=output_dev['index'],
+                                                       frames_per_buffer=CHUNK)
+                        except Exception as recover_error:
+                            print(self.messages[self.language]['failed_recover_output'].format(recover_error))
+                            break
                 else:
                     self.tray_state = 'deactive'
-        except KeyboardInterrupt:
-            self.tray_running.clear()
+                    
+            except OSError as e:
+                print(f"Audio device error: {e}")
+                retry_count += 1
+                
+                if retry_count >= max_retries:
+                    print(self.messages[self.language]['max_retries_reached'])
+                    break
+                
+                try:
+                    input_stream.stop_stream()
+                    input_stream.close()
+                    input_stream = self.p.open(format=pyaudio.paInt16,
+                                             channels=input_dev['channels'],
+                                             rate=input_dev['rate'],
+                                             input=True,
+                                             input_device_index=input_dev['index'],
+                                             frames_per_buffer=CHUNK)
+                    print(self.messages[self.language]['input_stream_recovered'])
+                except Exception as recover_error:
+                    print(self.messages[self.language]['failed_recover_input'].format(recover_error))
+                    break
+                    
+                # Wait a bit before retrying
+                time.sleep(1)
+                
+            except KeyboardInterrupt:
+                self.tray_running.clear()
+                break
+            except Exception as e:
+                print(self.messages[self.language]['unexpected_error'].format(e))
+                time.sleep(0.1) 
 
     def tray_icon_worker(self):
         def create_icon(state):
@@ -247,7 +338,7 @@ class PushToTalk:
             icon.stop()
 
         menu = pystray.Menu(pystray.MenuItem('Quit', on_quit))
-        icon = pystray.Icon('PTT4E', create_icon(self.tray_state), 'Push To Talk', menu)
+        icon = pystray.Icon('PTT4E', create_icon(self.tray_state), 'PTT4E', menu)
         self.tray_icon = icon
 
         def icon_updater():
@@ -259,6 +350,72 @@ class PushToTalk:
         updater_thread.start()
         icon.run()
         updater_thread.join(timeout=1)
+
+    def check_audio_devices(self, input_dev, output_dev):
+        """Check if audio devices are still available and reinitialize if needed"""
+        try:
+            # Check if devices still exist
+            device_count = self.p.get_device_count()
+            input_found = False
+            output_found = False
+            
+            for i in range(device_count):
+                dev = self.p.get_device_info_by_index(i)
+                if i == input_dev['index'] and dev['maxInputChannels'] > 0:
+                    input_found = True
+                if i == output_dev['index'] and dev['maxOutputChannels'] > 0:
+                    output_found = True
+            
+            if not input_found or not output_found:
+                print(self.messages[self.language]['audio_devices_changed'])
+                return False
+            return True
+        except Exception as e:
+            print(self.messages[self.language]['error_checking_devices'].format(e))
+            return False
+    
+    def reinitialize_audio(self, input_dev, output_dev, CHUNK):
+        """Reinitialize audio streams"""
+        try:
+            self.p.terminate()
+            self.p = pyaudio.PyAudio()
+            
+            input_stream = self.p.open(format=pyaudio.paInt16,
+                                      channels=input_dev['channels'],
+                                      rate=input_dev['rate'],
+                                      input=True,
+                                      input_device_index=input_dev['index'],
+                                      frames_per_buffer=CHUNK)
+            
+            output_stream = self.p.open(format=pyaudio.paInt16,
+                                       channels=output_dev['channels'],
+                                       rate=output_dev['rate'],
+                                       output=True,
+                                       output_device_index=output_dev['index'],
+                                       frames_per_buffer=CHUNK)
+            
+            return input_stream, output_stream
+        except Exception as e:
+            print(self.messages[self.language]['failed_reinitialize_audio'].format(e))
+            return None, None
+
+    def cleanup(self):
+        """Clean up audio resources"""
+        try:
+            if self.input_stream:
+                self.input_stream.stop_stream()
+                self.input_stream.close()
+            if self.output_stream:
+                self.output_stream.stop_stream()
+                self.output_stream.close()
+            if self.p:
+                self.p.terminate()
+        except Exception as e:
+            print(f"Error during cleanup: {e}")
+    
+    def __del__(self):
+        """Destructor to ensure cleanup"""
+        self.cleanup()
 
     def run(self):
         if 'language' not in self.config:
@@ -300,31 +457,33 @@ class PushToTalk:
                 else:
                     print(msg['invalid_input'])
         
+        self.ask_github_star()
+        
         CHUNK = 1024
         FORMAT = pyaudio.paInt16
         SAMPLE_RATE = min(input_dev['rate'], output_dev['rate'])
         CHANNELS = min(input_dev['channels'], output_dev['channels'])
         
-        input_stream = self.p.open(format=FORMAT,
-                                  channels=CHANNELS,
-                                  rate=SAMPLE_RATE,
-                                  input=True,
-                                  input_device_index=input_dev['index'],
-                                  frames_per_buffer=CHUNK)
+        self.input_stream = self.p.open(format=FORMAT,
+                                       channels=CHANNELS,
+                                       rate=SAMPLE_RATE,
+                                       input=True,
+                                       input_device_index=input_dev['index'],
+                                       frames_per_buffer=CHUNK)
         
-        output_stream = self.p.open(format=FORMAT,
-                                   channels=CHANNELS,
-                                   rate=SAMPLE_RATE,
-                                   output=True,
-                                   output_device_index=output_dev['index'],
-                                   frames_per_buffer=CHUNK)
+        self.output_stream = self.p.open(format=FORMAT,
+                                        channels=CHANNELS,
+                                        rate=SAMPLE_RATE,
+                                        output=True,
+                                        output_device_index=output_dev['index'],
+                                        frames_per_buffer=CHUNK)
         
         print(f"\n{msg['starting']}")
         print(f"{msg['press_key_to_talk']}")
         print(f"{msg['exit_instruction']}")
 
         self.tray_running.set()
-        ptt_thread = threading.Thread(target=self.ptt_loop, args=(input_stream, output_stream, key_name, CHUNK), daemon=True)
+        ptt_thread = threading.Thread(target=self.ptt_loop, args=(self.input_stream, self.output_stream, key_name, CHUNK, input_dev, output_dev), daemon=True)
         ptt_thread.start()
         try:
             self.tray_icon_worker()
@@ -335,11 +494,33 @@ class PushToTalk:
                 self.tray_icon.stop()
         finally:
             ptt_thread.join(timeout=1)
-            input_stream.stop_stream()
-            input_stream.close()
-            output_stream.stop_stream()
-            output_stream.close()
-            self.p.terminate()
+            self.cleanup()
+
+    def ask_github_star(self):
+        """Ask user if they want to give a star on GitHub"""
+        # Check if already asked
+        if self.config.get('github_star_asked', False):
+            return
+        
+        print(self.messages[self.language]['github_star_request'])
+        choice = input('> ').strip().lower()
+        
+        # Default to 'n' if empty input
+        if not choice:
+            choice = 'n'
+        
+        if choice in ['y', 'yes']:
+            print(self.messages[self.language]['github_star_thanks'])
+            try:
+                webbrowser.open('https://github.com/r4isy/PTT4E')
+            except Exception as e:
+                print(f"Error opening browser: {e}")
+        else:
+            print(self.messages[self.language]['github_star_declined'])
+        
+        # Mark as asked and save to config
+        self.config['github_star_asked'] = True
+        self.save_config()
 
 if __name__ == "__main__":
     app = PushToTalk()
