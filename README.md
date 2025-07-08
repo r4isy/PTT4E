@@ -1,8 +1,10 @@
 # 🎤 PTT4E - Push To Talk For Everything
 
-[![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![Download PTT4E](https://img.shields.io/static/v1?label=Download&message=PTT4E&color=blue)](https://github.com/r4isy/PTT4E/releases)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
+[![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/downloads/)
+
 
 A versatile push-to-talk application that works with any input device and any key combination. Perfect for gamers, streamers, and anyone who needs flexible voice activation.
 
