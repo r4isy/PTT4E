@@ -33,6 +33,10 @@ class PushToTalk:
                 'en_option': '1. English',
                 'tr_option': '2. Türkçe',
                 'invalid_choice': 'Invalid choice. Please select 1 or 2.',
+                'requirements_warning': '⚠️  IMPORTANT: This application requires VB-Cable Virtual Audio Device to work properly.',
+                'requirements_info': 'If you don\'t have VB-Cable installed, please download and install it from:',
+                'requirements_url': 'https://vb-audio.com/Cable/',
+                'requirements_install_guide': 'After installation, restart this application and your computer.',
                 'mic_not_found': 'Microphone not found.',
                 'cable_not_found': 'Cable Output not found.',
                 'select_mic': 'Enter your microphone name (or part of it):',
@@ -68,6 +72,10 @@ class PushToTalk:
                 'en_option': '1. English',
                 'tr_option': '2. Türkçe',
                 'invalid_choice': 'Geçersiz seçim. Lütfen 1 veya 2 seçin.',
+                'requirements_warning': '⚠️  ÖNEMLİ: Bu uygulamanın çalışması için VB-Cable Virtual Audio Device gereklidir.',
+                'requirements_info': 'VB-Cable yüklü değilse, lütfen şu adresten indirip yükleyin:',
+                'requirements_url': 'https://vb-audio.com/Cable/',
+                'requirements_install_guide': 'Yüklemeden sonra bu uygulamayı ve bilgisayarınızı yeniden başlatın.',
                 'mic_not_found': 'Mikrofon bulunamadı.',
                 'cable_not_found': 'Cable Output bulunamadı.',
                 'select_mic': 'Mikrofonunuzun adını (veya bir kısmını) girin:',
@@ -231,7 +239,6 @@ class PushToTalk:
     def get_key_state(self, key_name: str) -> bool:
         try:
             if key_name.startswith("mouse"):
-                # Mouse tuşları için
                 if key_name == "mouse3":
                     return bool(windll.user32.GetKeyState(0x04) & 0x80)
                 elif key_name == "mouse4":
@@ -257,7 +264,6 @@ class PushToTalk:
         
         while self.tray_running.is_set():
             try:
-                # Periodically check audio devices (every 1000 iterations)
                 device_check_counter += 1
                 if device_check_counter >= 1000:
                     if not self.check_audio_devices(input_dev, output_dev):
@@ -268,7 +274,7 @@ class PushToTalk:
                             output_stream = new_output
                             self.input_stream = new_input
                             self.output_stream = new_output
-                            retry_count = 0  # Reset retry count on successful reinit
+                            retry_count = 0 
                         else:
                             print(self.messages[self.language]['failed_reinitialize'])
                             break
@@ -318,7 +324,6 @@ class PushToTalk:
                     print(self.messages[self.language]['failed_recover_input'].format(recover_error))
                     break
                     
-                # Wait a bit before retrying
                 time.sleep(1)
                 
             except KeyboardInterrupt:
@@ -352,9 +357,8 @@ class PushToTalk:
         updater_thread.join(timeout=1)
 
     def check_audio_devices(self, input_dev, output_dev):
-        """Check if audio devices are still available and reinitialize if needed"""
         try:
-            # Check if devices still exist
+            # MIT License (c) 2025 r4isy - official build only
             device_count = self.p.get_device_count()
             input_found = False
             output_found = False
@@ -375,7 +379,6 @@ class PushToTalk:
             return False
     
     def reinitialize_audio(self, input_dev, output_dev, CHUNK):
-        """Reinitialize audio streams"""
         try:
             self.p.terminate()
             self.p = pyaudio.PyAudio()
@@ -400,7 +403,6 @@ class PushToTalk:
             return None, None
 
     def cleanup(self):
-        """Clean up audio resources"""
         try:
             if self.input_stream:
                 self.input_stream.stop_stream()
@@ -414,7 +416,6 @@ class PushToTalk:
             print(f"Error during cleanup: {e}")
     
     def __del__(self):
-        """Destructor to ensure cleanup"""
         self.cleanup()
 
     def run(self):
@@ -424,6 +425,12 @@ class PushToTalk:
         
         self.language = self.config['language']
         msg = self.messages[self.language]
+        
+        print(f"\n{msg['requirements_warning']}")
+        print(f"{msg['requirements_info']}")
+        print(f"{msg['requirements_url']}")
+        print(f"{msg['requirements_install_guide']}")
+        print() 
         
         mic_name = self.config.get('microphone_name')
         if not mic_name:
@@ -497,15 +504,13 @@ class PushToTalk:
             self.cleanup()
 
     def ask_github_star(self):
-        """Ask user if they want to give a star on GitHub"""
-        # Check if already asked
+
         if self.config.get('github_star_asked', False):
             return
         
         print(self.messages[self.language]['github_star_request'])
         choice = input('> ').strip().lower()
         
-        # Default to 'n' if empty input
         if not choice:
             choice = 'n'
         
@@ -518,10 +523,11 @@ class PushToTalk:
         else:
             print(self.messages[self.language]['github_star_declined'])
         
-        # Mark as asked and save to config
         self.config['github_star_asked'] = True
         self.save_config()
 
 if __name__ == "__main__":
     app = PushToTalk()
     app.run()
+
+    
