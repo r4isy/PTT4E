@@ -1,12 +1,15 @@
 # 🎤 PTT4E - Push To Talk For Everything
 
+> 🎙️ **PTT4E (Push To Talk For Everything)** is a free and open-source voice activation (push-to-talk) tool for **Windows**.  
+> Ideal for **Roblox**, **OBS**, and more.  
+> Customize any key or mouse button – even scroll wheel – to trigger your microphone with blazing-fast latency.  
+> Works seamlessly with **VB-CABLE**, supports **mouse buttons**, **multi-language UI** (English & Turkish), and is trusted by game developers and streamers alike.
+
 [![Download PTT4E](https://img.shields.io/static/v1?label=Download&message=PTT4E&color=blue)](https://github.com/r4isy/PTT4E/releases)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 [![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/downloads/)
 
-
-A versatile push-to-talk application that works with any input device and any key combination. Perfect for gamers, streamers, and anyone who needs flexible voice activation.
 
 > 📝 Tip: All dependencies are listed in `requirements.txt`
 
@@ -39,6 +42,16 @@ PTT4E, herhangi bir mikrofon ve herhangi bir tuş kombinasyonu ile çalışan es
      pip install -r requirements.txt
      python main.py
      ```
+
+> ⚠️ **DİKKAT: VB-CABLE GEREKLİDİR**  
+> PTT4E, mikrofon verisini iletmek için **VB-CABLE Virtual Audio Device** kullanır.  
+> Uygulamayı çalıştırdıktan sonra, **push to talk kullanmak istediğiniz programda giriş cihazı olarak `CABLE Output` seçilmelidir.**  
+>  
+> Örneğin: Roblox, OBS, vb.  
+>  
+> 📥 [VB-CABLE İndir](https://vb-audio.com/Cable/)
+
+
 
 > 💡 Eğer `main.py` dosyasını doğrudan çalıştırıyorsanız,  
 > `tray-active.ico` ve `tray-deactive.ico` dosyalarının aynı klasörde bulunduğundan emin olun.  
@@ -104,6 +117,15 @@ PTT4E is a flexible push-to-talk application that works with any microphone and 
      python main.py
      ```
 
+> ⚠️ **IMPORTANT: VB-CABLE IS REQUIRED**  
+> PTT4E uses **VB-CABLE Virtual Audio Device** to route microphone audio.  
+> After launching PTT4E, make sure to **select `CABLE Output` as the input device in the application where you use push-to-talk.**  
+>  
+> Example: Roblox, OBS, etc.  
+>  
+> 📥 [Download VB-CABLE](https://vb-audio.com/Cable/)
+
+
 > 💡 If you're running `main.py` directly (not the .exe),  
 > make sure `tray-active.ico` and `tray-deactive.ico` are in the same folder.  
 > These are required for tray icon support.
@@ -162,3 +184,9 @@ This application is for educational and personal use. Make sure to comply with y
 ---
 
 **Made with ❤️ for the gaming and streaming community** 
+
+<!-- SEO Keywords -->
+<!--
+push to talk software, ptt for windows, roblox push to talk, obs push to talk, open source ptt, ptt4e, ptt 4 everything, r4isy, voice activation tool, mouse button push to talk, vb-cable push to talk, python ptt, mikrofon kontrol, oyun içi konuşma yazılımı, yayıncılar için mikrofon kontrolü
+-->
+
